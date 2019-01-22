@@ -1,0 +1,219 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.main.manage.modules.dao.TestCaseDao">
+    <select id="getProjectHostListByUid"  resultType="com.main.manage.modules.entity.ProjectHostEntity">
+        SELECT
+            aph.id,
+            ap.id as projectId,
+            ap.project,
+            aph.version,
+            aph.domain,
+            aph.ip
+        FROM
+            at_project ap
+            LEFT JOIN at_project_host aph ON ap.id = aph.project_id
+        WHERE 1=1
+            AND ap.status = 0
+            AND aph.status = 0
+            <choose>
+                <when test="uid != null">
+                    AND ap.uid = #{uid}
+                </when>
+                <otherwise>
+                    AND 1=2
+                </otherwise>
+            </choose>
+        ORDER BY ap.project, aph.version;
+    </select>
+
+    <select id="checkProjectOwner"  resultType="String">
+        SELECT uid
+        FROM
+        at_project ap
+        WHERE 1=1
+        <choose>
+            <when test="projectId != null">
+                AND ap.id = #{projectId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="isExstsVersion"  resultType="String">
+        SELECT t.version
+        FROM
+        at_project_host t JOIN at_project a ON t.project_id = a.id
+        WHERE 1=1
+        <choose>
+            <when test="uid != null">
+                AND a.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="projectId != null">
+                AND a.id = #{projectId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="version != null">
+                AND t.version = #{version}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insertHostIp">
+      insert into at_project_host( project_id, version, domain, ip) values (#{projectId}, #{version}, #{domain} #{hostIp})
+    </insert>
+
+
+    <update id="updateHostIp">
+        update at_project_host t
+        set t.ip = #{hostIp},
+             t.domain = #{domain}
+        where t.id = #{hostId}
+        and t.project_id = #{projectId}
+    </update>
+
+
+    <!--接口相关-->
+    <select id="getAllApiByUid"  resultType="com.main.manage.modules.entity.TestApiEntity">
+        SELECT t.id, t.project_id, t.module_id, t.version, t.api_name, t.api_protocol_type, t.domain, t.uri, t.status, a.project, b.module
+        FROM at_project_api t left join at_project a on t.project_id = a.id
+        left join at_project_module b on t.module_id = b.id
+        WHERE 1=1
+        AND t.status != -1
+        <choose>
+            <when test="uid != null">
+                AND a.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <if test="key_word != null">
+            AND t.api_name LIKE CONCAT('%',#{key_word},'%')
+        </if>
+        <choose>
+            <when test="moduleList != null and moduleList.size() > 0">
+                AND t.module_id in
+                <foreach item="id" collection="moduleList" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <if test="startRow != null">
+            ORDER BY t.update_time desc limit #{startRow},#{pageSize}
+        </if>
+
+    </select>
+
+    <!--接口相关-->
+    <select id="getTotalApiByUid"  resultType="Integer">
+        SELECT count(1)
+        FROM at_project_api t left join at_project a
+        on t.project_id = a.id
+        WHERE 1=1
+        AND t.status != -1
+        <choose>
+            <when test="uid != null">
+                AND a.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <if test="key_word != null">
+            AND t.api_name LIKE CONCAT('%',#{key_word},'%')
+        </if>
+        <choose>
+            <when test="moduleList != null and moduleList.size() > 0">
+                AND t.module_id in
+                <foreach item="id" collection="moduleList" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="isExstsTestApi" resultType="String">
+        SELECT t.id
+        FROM
+        at_project_api t JOIN at_project a ON t.project_id = a.id
+        WHERE 1=1
+        <choose>
+            <when test="uid != null">
+                AND a.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="projectId != null">
+                AND a.id = #{projectId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="apiId != null">
+                AND t.id = #{apiId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insertTestApi">
+        insert into at_project_api( project_id, module_id, api_name, api_protocol_type, domain, uri) values (#{projectId}, #{moduleId}, #{apiName}, #{apiProtoType}, #{domain}, #{uri})
+    </insert>
+
+    <update id="updateTestApi">
+        update at_project_api t
+        set t.module_id = #{moduleId},
+             t.api_protocol_type = #{apiProtoType},
+             t.domain = #{domain},
+             t.uri = #{uri},
+             t.api_name = #{apiName}
+        where t.id = #{id}
+        and t.project_id = #{projectId}
+    </update>
+
+    <update id="updateTestApiStatusByIds">
+        update at_project_api t
+        left join at_project a on t.project_id = a.id
+        set t.status = #{status}
+        where 1 = 1
+        <choose>
+            <when test="uid != null">
+                AND a.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        and t.id in
+        <foreach item="id" collection="ids" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+ </mapper>

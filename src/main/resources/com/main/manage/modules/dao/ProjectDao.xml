@@ -1,0 +1,155 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.main.manage.modules.dao.ProjectDao">
+    <select id="getUserProjectByUid"  resultType="com.main.manage.modules.entity.ProjectEntity">
+        SELECT t.id, t.project, t.type, a.version, a.remark, t.uid, a.id as versionId
+        FROM at_project t join at_project_host a on t.id = a.project_id
+        WHERE 1=1
+        AND t.status = 0
+        AND a.status = 0
+        <choose>
+            <when test="uid != null">
+                AND t.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <if test="key_word != null">
+            AND t.project LIKE CONCAT('%',#{key_word},'%')
+        </if>
+        <if test="startRow != null">
+            ORDER BY a.update_time desc limit #{startRow},#{pageSize}
+        </if>
+    </select>
+
+    <select id="getAllUserProjectByUid"  resultType="com.main.manage.modules.entity.ProjectEntity">
+        SELECT t.id, t.project, t.type, t.uid
+        FROM at_project t
+        WHERE 1=1
+        AND t.status = 0
+        <choose>
+            <when test="uid != null">
+                AND t.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getTotalProjectByUid"  resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM at_project t join at_project_host a on t.id = a.project_id
+        WHERE 1=1
+        AND t.status = 0
+        AND a.status = 0
+        <choose>
+            <when test="uid != null">
+                AND t.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <if test="key_word != null">
+            AND t.project LIKE CONCAT('%',#{key_word},'%')
+        </if>
+    </select>
+
+
+    <select id="getVersionsByProjectId"  resultType="java.util.HashMap">
+        SELECT t.id, t.version
+        FROM at_project_host t
+        WHERE 1=1
+        AND t.status = 0
+        <choose>
+            <when test="uid != null">
+                AND t.project_id = #{projectId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        ORDER BY t.version
+    </select>
+
+    <select id="getUserProjectAndModuleByUid"  resultType="com.main.manage.modules.entity.ModuleEntity">
+        select id, id as project_id, project, '' module, -1 parent_id, status
+        from at_project t
+        where t.status = 0
+        and t.uid = #{uid}
+        UNION
+        select id, project_id, '' as project, module, parent_id, status
+        from at_project_module a
+        where a.status != -1
+        and a.project_id in
+        (
+          select id from at_project ap where ap.status = 0 and ap.uid = ${uid}
+        )
+    </select>
+
+
+
+    <insert id="addProject" parameterType="com.main.manage.modules.entity.ProjectEntity" useGeneratedKeys="true" keyProperty="id">
+      insert into at_project(project, type, uid) values(#{project}, #{type}, #{uid})
+    </insert>
+    <insert id="addVersion" parameterType="com.main.manage.modules.entity.ProjectHostEntity" useGeneratedKeys="true" keyProperty="id">
+      insert into at_project_host(project_id, version, remark) values(#{projectId}, #{version}, #{remark})
+    </insert>
+
+    <update id="editProjectById" parameterType="com.main.manage.modules.entity.ProjectHostEntity">
+        update at_project t set
+        <if test="type != null">
+            t.type = #{type}
+        </if>
+        where 1=1 and t.id = #{id} and t.uid = #{uid};
+    </update>
+
+    <update id="editVersionById">
+        update at_project_host a set
+        a.version = #{version},
+        a.remark = #{desc}
+        where 1=1
+        and a.project_id = #{projectId}
+        <choose>
+            <when test="versionId != null">
+                AND a.id = #{versionId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>;
+    </update>
+
+    <update id="deleteProjectByIds">
+        update at_project t set t.status = 1
+        where 1 = 1
+        <choose>
+            <when test="uid != null">
+                AND t.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        and t.id in
+        <foreach item="id" collection="projectList" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="deleteVersionById">
+        update at_project_host t set t.status = 1
+        where 1 = 1
+        <choose>
+            <when test="id != null">
+                AND t.id = #{id}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+    </update>
+
+</mapper>

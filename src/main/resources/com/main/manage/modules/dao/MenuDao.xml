@@ -1,0 +1,10 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.main.manage.modules.dao.MenuDao">
+    <select id="getUserMenuById"  resultType="com.main.manage.modules.entity.MenuEntity">
+        SELECT t.id, t.icon, t.title, t.index, t.path, t.parent_id
+        FROM sys_menu t
+        WHERE t.status =1 and t.roler_id = #{uid}
+    </select>
+
+ </mapper>
