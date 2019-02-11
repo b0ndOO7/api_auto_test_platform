@@ -1,10 +1,7 @@
 package com.main.manage.modules.service;
 
 import com.main.manage.modules.dao.TestCaseDao;
-import com.main.manage.modules.entity.ApiInfoEntity;
-import com.main.manage.modules.entity.ProjectHostEntity;
-import com.main.manage.modules.entity.TestApiEntity;
-import com.main.manage.modules.entity.UserEntity;
+import com.main.manage.modules.entity.*;
 import com.main.manage.utils.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +21,13 @@ public class TestCaseService {
     private TestCaseDao testCaseDao;
 
     /**
-     * 获取用户测试用例
+     * 根据项目id获取测试用例
      * @param uid
+     * @param projectId
      * @return
      */
-    public UserEntity getTestCaseListByUid(String uid) {
-        return testCaseDao.findByUid(Integer.valueOf(uid));
+    public List getTestCaseListByPid(String uid, String projectId) {
+        return testCaseDao.findTestCaseByProjectId(uid, projectId);
     }
 
     /**

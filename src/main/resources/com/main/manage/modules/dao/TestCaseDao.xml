@@ -309,4 +309,40 @@
     </insert>
 
 
+    <select id="findTestCaseByProjectId" resultType="com.main.manage.modules.entity.TestCaseEntity">
+        select tc.id,
+        tc.project_id,
+        tc.case_name,
+        pa.api_name,
+        concat(case when pa.protocol_type='' then 'http'
+                    when pa.protocol_type is null then 'http'
+                    else lower(pa.protocol_type)
+                    end,
+                '://', pa.domain, pa.uri) url,
+        tc.status,
+        tar.index
+        from at_testcase tc
+        join at_project p on tc.project_id = p.id
+        join at_testcase_api_relation tar on tc.id = tar.case_id
+        join at_project_api pa on pa.id = tar.api_id
+        where 1=1
+        <choose>
+            <when test="uid != null">
+                and p.uid = #{uid}
+            </when>
+            <otherwise>
+                and 1=2
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="projectId != null">
+                and tc.project_id = #{projectId}
+            </when>
+            <otherwise>
+                and 1=2
+            </otherwise>
+        </choose>
+        order by tc.update_time desc, tar.index
+    </select>
+
  </mapper>

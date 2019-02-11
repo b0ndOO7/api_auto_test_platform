@@ -7,6 +7,7 @@ import com.main.manage.modules.model.ProjectModel;
 import com.main.manage.modules.service.ProjectService;
 import com.main.manage.utils.ResultCode;
 import com.main.manage.utils.ResultUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
-
+@Slf4j
 @RestController
 @RequestMapping("/project")
 public class ProjectController extends BaseController {
@@ -31,7 +32,7 @@ public class ProjectController extends BaseController {
      */
     @RequestMapping("getuserprojectlist")
     public Result getProjectList(@RequestBody Map<String,String> map) {
-
+        log.info("getProjectList: {}", map);
         int curPage = 0, pageSize = 0;
         try {
             String uid = map.get("uid");
@@ -41,9 +42,9 @@ public class ProjectController extends BaseController {
             if (StringUtils.isEmpty(uid)) {
                 ResultUtils.warn(ResultCode.PARAMETER_NULL, "UID不能为空");
             }
-            return ResultUtils.success(projectService.getProjectList(uid, key_word, curPage, pageSize));
+            return ResultUtils.success(projectService.getProjectListByUid(uid, key_word, curPage, pageSize));
         } catch (Exception e) {
-            return ResultUtils.warn(ResultCode.PASSWORD_ERROR);
+            return ResultUtils.warn(ResultCode.PARAMETER_ERROR);
         }
 
 

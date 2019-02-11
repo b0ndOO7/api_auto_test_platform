@@ -1,9 +1,6 @@
 package com.main.manage.modules.dao;
 
-import com.main.manage.modules.entity.ApiInfoEntity;
-import com.main.manage.modules.entity.ProjectHostEntity;
-import com.main.manage.modules.entity.TestApiEntity;
-import com.main.manage.modules.entity.UserEntity;
+import com.main.manage.modules.entity.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
@@ -13,11 +10,7 @@ import java.util.List;
 @Mapper
 public interface TestCaseDao {
 
-    UserEntity findByUsername(String username);
-
-    UserEntity findByUid(int uid);
-
-    UserEntity checkPassword(@Param("username") String username, @Param("password") String password);
+    List<TestCaseEntity> findTestCaseByProjectId(@Param("uid")String uid, @Param("projectId")String projectId);
 
     List<ProjectHostEntity> getProjectHostListByUid(@Param("uid")String uid);
 

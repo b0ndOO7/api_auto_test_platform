@@ -3,6 +3,7 @@ package com.main.manage.modules.controller;
 import com.main.manage.RestTemplate.Result;
 import com.main.manage.modules.entity.ProjectHostEntity;
 import com.main.manage.modules.model.ApiInfoModel;
+import com.main.manage.modules.model.ProjectModel;
 import com.main.manage.modules.model.UserModel;
 import com.main.manage.modules.service.TestCaseService;
 import com.main.manage.modules.service.TestExecService;
@@ -11,11 +12,10 @@ import com.main.manage.utils.HttpResp;
 import com.main.manage.utils.ResultCode;
 import com.main.manage.utils.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.Header;
-import org.apache.ibatis.annotations.Case;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,15 +34,16 @@ public class TestCaseController extends BaseController {
     @Autowired
     private TestExecService testExecService;
 
-    @RequestMapping("list")
-    public Result getTestCaseByUid(@RequestBody UserModel userModel) {
-        log.info("list: " + userModel);
-        if (StringUtils.isEmpty(userModel.getUid())) {
-            return ResultUtils.warn(ResultCode.UID_NULL);
-        }
-       testCaseService.getTestCaseListByUid(userModel.getUid());
 
-        return ResultUtils.success("");
+    @RequestMapping("getlist")
+    public Result getTestCaseByPid(@RequestHeader String uid, @RequestBody ProjectModel projectModel) {
+        log.info("getTestCaseByPid: uid:{}, pid:{}, reuestheader uid: {}", projectModel.getUid(), projectModel.getId(), uid);
+        if (StringUtils.isEmpty(uid) || StringUtils.isEmpty(projectModel.getId())) {
+            return ResultUtils.warn(ResultCode.PARAMETER_NULL);
+        }
+//       testCaseService.getTestCaseListByPid(projectModel.getUid(), String.valueOf(projectModel.getId()));
+
+        return ResultUtils.success(testCaseService.getTestCaseListByPid(uid, String.valueOf(projectModel.getId())));
     }
 
     @RequestMapping("hosts")
@@ -57,10 +58,9 @@ public class TestCaseController extends BaseController {
     }
 
     @RequestMapping("savehost")
-    public Result saveProjectHost(@RequestBody Map<String,String> requestMap) {
+    public Result saveProjectHost(@RequestHeader String uid, @RequestBody Map<String,String> requestMap) {
         log.info("savehost:" + requestMap);
         try {
-            String uid = requestMap.get("uid");
             String hostId = requestMap.get("id");
             String hostIp = requestMap.get("ip");
             String projectId = requestMap.get("projectId");
@@ -85,11 +85,10 @@ public class TestCaseController extends BaseController {
      * @return
      */
     @RequestMapping("getapilist")
-    public Result getApiListByUid(@RequestBody Map<String,Object> requestMap) {
+    public Result getApiListByUid(@RequestHeader String uid, @RequestBody Map<String,Object> requestMap) {
         log.info("getapilist: {}", FastJsonUtil.parseToJSON(requestMap));
 
 //        try {
-            String uid = (String) requestMap.get("uid");
             String keyWord = (String) requestMap.get("keyword");
             int curPage = (Integer) requestMap.get("cur_page");
             int pageSize = (Integer) requestMap.get("page_size");
@@ -115,11 +114,10 @@ public class TestCaseController extends BaseController {
      * @return
      */
     @RequestMapping("savetestapi")
-    public Result saveTestApiByUid(@RequestBody Map<String,String> requestMap) {
+    public Result saveTestApiByUid(@RequestHeader String uid, @RequestBody Map<String,String> requestMap) {
         log.info("savetestapi: " + requestMap);
 
         try {
-            String uid = requestMap.get("uid");
             String apiId = requestMap.get("id");
             String projectId = requestMap.get("projectId");
             String moduleId = requestMap.get("moduleId");
@@ -148,11 +146,10 @@ public class TestCaseController extends BaseController {
      * @return
      */
     @RequestMapping("deletetestapi")
-    public Result deleteTestApi(@RequestBody Map<String, Object> requestMap) {
+    public Result deleteTestApi(@RequestHeader String uid, @RequestBody Map<String, Object> requestMap) {
         log.info("deletetestapi: {} ", requestMap);
 
         try {
-            String uid = (String) requestMap.get("uid");
             List<Integer> apiIds = (List) requestMap.get("apiIds");
             if (apiIds.size() < 1) {
                 log.warn("接口ID为空: apiIds:{}, uid:{}", apiIds, uid);
@@ -173,11 +170,10 @@ public class TestCaseController extends BaseController {
      * @return
      */
     @RequestMapping("changeapistatus")
-    public Result changeTestApiStatus(@RequestBody Map<String, Object> requestMap) {
+    public Result changeTestApiStatus(@RequestHeader String uid, @RequestBody Map<String, Object> requestMap) {
         log.info("changeapistatus: {} ", requestMap);
 
         try {
-            String uid = String.valueOf(requestMap.get("uid"));
             String apiId = String.valueOf(requestMap.get("apiId"));
             boolean status = (boolean) requestMap.get("status");
 
@@ -204,11 +200,10 @@ public class TestCaseController extends BaseController {
      * @return
      */
     @RequestMapping("getapiinfo")
-    public Result getTestApiInfo(@RequestBody Map<String, Object> requestMap) {
+    public Result getTestApiInfo(@RequestHeader String uid, @RequestBody Map<String, Object> requestMap) {
         log.info("getTestApiInfo: {} ", requestMap);
 
         try {
-            String uid = String.valueOf(requestMap.get("uid"));
             String apiId = String.valueOf(requestMap.get("apiId"));
 
             if (StringUtils.isEmpty(apiId) || StringUtils.isEmpty(uid)) {
@@ -229,10 +224,9 @@ public class TestCaseController extends BaseController {
 
     //
     @RequestMapping("saveapiinfo")
-    public Result saveTestApiInfo(@RequestBody Map<String, Object> requestMap) {
+    public Result saveTestApiInfo(@RequestHeader String uid, @RequestBody Map<String, Object> requestMap) {
         log.info("saveTestApiInfo: {} ", requestMap);
         try {
-            String uid = String.valueOf(requestMap.get("uid"));
             String apiId = String.valueOf(requestMap.get("apiid"));
             String projectId = String.valueOf(requestMap.get("project_id"));
             String protocolType = String.valueOf(requestMap.get("protocol_type"));

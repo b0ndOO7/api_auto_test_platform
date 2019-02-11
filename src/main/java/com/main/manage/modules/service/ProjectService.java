@@ -5,6 +5,7 @@ import com.main.manage.modules.entity.ModuleEntity;
 import com.main.manage.modules.entity.ProjectEntity;
 import com.main.manage.modules.entity.ProjectHostEntity;
 import com.main.manage.modules.model.ProjectModel;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -14,13 +15,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+@Slf4j
 @Service
 public class ProjectService {
 
     @Autowired
     private ProjectDao projectDao;
 
-    public HashMap getProjectList(String uid, String key_word, int curPage, int pageSize) {
+    public HashMap getProjectListByUid(String uid, String key_word, int curPage, int pageSize) {
         curPage = curPage<1 ? 1:curPage;
         pageSize = pageSize<1 ? 1:pageSize;
         int startRow = (curPage - 1) * pageSize;
@@ -28,6 +30,8 @@ public class ProjectService {
         HashMap returnMap = new HashMap<>();
         returnMap.put("projects",projectDao.getUserProjectByUid(uid, startRow, pageSize, key_word));
         returnMap.put("totalrow",projectDao.getTotalProjectByUid(uid, key_word));
+        log.info("getProjectListByUid: projects:{}", returnMap.get("projects"));
+        log.info("getProjectListByUid: totalrow:{}", returnMap.get("totalrow"));
 
         return returnMap;
     }
