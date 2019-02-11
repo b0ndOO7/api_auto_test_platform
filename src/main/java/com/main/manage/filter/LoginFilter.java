@@ -32,7 +32,7 @@ public class LoginFilter implements Filter {
         String requestUri = request.getRequestURI();
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json; charset=utf-8");
-        log.info("接口地址："+requestUri);
+        log.info("接口地址：" + requestUri);
         //过滤白名单
         if ( ! StringUtils.isEmpty(requestUri) && URL_WHITE_LIST.contains(requestUri)){
             log.info("进入白名单："+requestUri);
@@ -41,7 +41,7 @@ public class LoginFilter implements Filter {
             String token = request.getHeader("token");
             String uid = request.getHeader("uid");
             log.info("token:{}", token);
-            if (token == null ){
+            if (token == null || StringUtils.isEmpty(token)){
                 log.warn("token值为空-----用户未登录");
                 PrintWriter out = response.getWriter();
                 out.print(FastJsonUtil.parseToJSON(ResultUtils.warn(ResultCode.USER_NOT_LOGIN)));
@@ -49,8 +49,8 @@ public class LoginFilter implements Filter {
                 out.close();
                 return;
             }
-             String userId = (String) redisService.get(uid + RedisKeys.LOGIN_TOKEN + token);
-            if(userId==null){
+             String userId = (String) redisService.get(RedisKeys.LOGIN_TOKEN + uid + "_" + token);
+            if(userId == null){
                 log.info("用户token不匹配，需重新登录");
                 PrintWriter out = response.getWriter();
                 out.print(FastJsonUtil.parseToJSON(ResultUtils.warn(ResultCode.USER_NOT_LOGIN)));
@@ -59,7 +59,7 @@ public class LoginFilter implements Filter {
                 return;
             } else{
                 // 更新缓存ttl
-                redisService.set(uid + RedisKeys.LOGIN_TOKEN + token, uid, RedisKeys.TOKEN_TTL);
+                redisService.set(RedisKeys.LOGIN_TOKEN + uid + "_" + token, uid, RedisKeys.TOKEN_TTL);
                 log.info("用户已经登录 userid:{} ", userId);
                 filterChain.doFilter(request,response);
             }

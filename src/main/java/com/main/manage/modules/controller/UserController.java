@@ -7,6 +7,7 @@ import com.main.manage.modules.entity.UserEntity;
 import com.main.manage.modules.model.UserModel;
 import com.main.manage.modules.service.RedisService;
 import com.main.manage.modules.service.UserService;
+import com.main.manage.utils.FastJsonUtil;
 import com.main.manage.utils.RedisKeys;
 import com.main.manage.utils.ResultCode;
 import com.main.manage.utils.ResultUtils;
@@ -35,7 +36,7 @@ public class UserController extends BaseController {
 
     @RequestMapping("/login")
     public Result doLogin(@RequestBody UserModel userModel){
-        log.info("doLogin:" + userModel);
+        log.info("doLogin:" + FastJsonUtil.parseToJSON(userModel));
         //  参数校验
         if ( userModel == null || StringUtils.isEmpty(userModel.getUsername()) || StringUtils.isEmpty(userModel.getPassword())) {
             return ResultUtils.warn(ResultCode.PARAMETER_ERROR);
@@ -48,8 +49,8 @@ public class UserController extends BaseController {
             String token = UUID.randomUUID().toString().replaceAll("-", "");
             user.setPassword("");
             user.setToken(token);
-            redisService.removePattern(user.getUid() + RedisKeys.LOGIN_TOKEN + "*");
-            redisService.set(user.getUid() + RedisKeys.LOGIN_TOKEN + token, user.getUid(), RedisKeys.TOKEN_TTL);
+            redisService.removePattern(RedisKeys.LOGIN_TOKEN + user.getUid() + "_*");
+            redisService.set(RedisKeys.LOGIN_TOKEN + user.getUid() + "_" + token, user.getUid(), RedisKeys.TOKEN_TTL);
 
             return ResultUtils.success(user);
         }
@@ -58,14 +59,14 @@ public class UserController extends BaseController {
     @RequestMapping("logout")
     public Result doLogout(@RequestBody Map<String,String> reqMap){
         log.info("doLogout" + reqMap);
-        boolean isLogout = redisService.remove(reqMap.get("uid") + RedisKeys.LOGIN_TOKEN + reqMap.get("token"));
+        boolean isLogout = redisService.remove(RedisKeys.LOGIN_TOKEN + reqMap.get("uid") + "_" + reqMap.get("token"));
         if (isLogout) {
             log.info("用户：" + reqMap.get("uid") + ",退出成功，已清除redis");
         }else {
             log.error("用户：" + reqMap.get("uid") + ",退出失败");
         }
 
-        return isLogout ? ResultUtils.success("退出成功"): ResultUtils.warn(ResultCode.FAIL,"退出失败");
+        return isLogout ? ResultUtils.success("退出成功"): ResultUtils.warn(ResultCode.TOKEN_ERROR);
     }
 
     @RequestMapping("getmenu")

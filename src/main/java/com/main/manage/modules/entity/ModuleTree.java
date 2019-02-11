@@ -21,9 +21,12 @@ public class ModuleTree {
                 mapArr.put("projectid", moduleEntity.getProject_id());
                 mapArr.put("project", moduleEntity.getProject());
                 mapArr.put("module", moduleEntity.getModule());
-//                mapArr.put("parentid", moduleEntity.getParent_id());
+                mapArr.put("parentid", moduleEntity.getParent_id());
                 mapArr.put("status", moduleEntity.getStatus());
-                mapArr.put("children", moduleChild(moduleEntity.getProject_id()));
+                List<?> tmpList = moduleChild(moduleEntity.getProject_id());
+                if (tmpList.size()>0) {
+                    mapArr.put("children", tmpList);
+                }
                 list.add(mapArr);
             }
         }
@@ -45,9 +48,12 @@ public class ModuleTree {
                 childArray.put("projectid", moduleEntity.getProject_id());
                 childArray.put("project", moduleEntity.getProject());
                 childArray.put("module", moduleEntity.getModule());
-//                childArray.put("parentid", moduleEntity.getParent_id());
+                childArray.put("parentid", moduleEntity.getParent_id());
                 childArray.put("status", moduleEntity.getStatus());
-                childArray.put("children", moduleChild(moduleEntity.getId(), projectId));
+                List<?> list = moduleChild(moduleEntity.getId(), projectId);
+                if (list.size()>0) {
+                    childArray.put("children", list);
+                }
                 lists.add(childArray);
             }
         }
@@ -70,9 +76,12 @@ public class ModuleTree {
                 childArray.put("projectid", moduleEntity.getProject_id());
                 childArray.put("project", moduleEntity.getProject());
                 childArray.put("module", moduleEntity.getModule());
-//                childArray.put("parentid", moduleEntity.getParent_id());
+                childArray.put("parentid", moduleEntity.getParent_id());
                 childArray.put("status", moduleEntity.getStatus());
-                childArray.put("children", moduleChild(moduleEntity.getId(), projectId));
+                List<?> list = moduleChild(moduleEntity.getId(), projectId);
+                if (list.size()>0) {
+                    childArray.put("children", list);
+                }
                 lists.add(childArray);
             }
         }

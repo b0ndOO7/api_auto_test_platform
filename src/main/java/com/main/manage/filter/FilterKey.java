@@ -9,6 +9,9 @@ public class FilterKey {
     /** 用户登陆 */
 	private static String  LOGIN = "/user/login";
 
+	/** 用户退出 */
+	private static String  LOGOUT = "/user/logout";
+
 	/** 获取验证码*/
 	private static String  PHONE_CODE = "/system/seller/getSmsCode";
 
@@ -18,6 +21,7 @@ public class FilterKey {
 	public static final List<String> URL_WHITE_LIST = new ArrayList<>(
 			Arrays.asList(
 					LOGIN,
+					LOGOUT,
 					PHONE_CODE
 			)
 	);

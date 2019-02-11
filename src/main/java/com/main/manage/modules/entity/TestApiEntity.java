@@ -11,7 +11,8 @@ public class TestApiEntity {
     private String domain;
     private String uri;
     private String api_name;
-    private String api_protocol_type;
+    private String protocol_type; //需要修改 todo
+    private String method_type;
     private int status;
 
     public int getId() {
@@ -54,14 +55,6 @@ public class TestApiEntity {
         this.api_name = api_name;
     }
 
-    public String getApi_protocol_type() {
-        return api_protocol_type;
-    }
-
-    public void setApi_protocol_type(String api_protocol_type) {
-        this.api_protocol_type = api_protocol_type;
-    }
-
     public int getStatus() {
         return status;
     }
@@ -100,5 +93,26 @@ public class TestApiEntity {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public String getProtocol_type() {
+        return protocol_type;
+    }
+
+    public void setProtocol_type(String protocol_type) {
+        this.protocol_type = protocol_type;
+    }
+
+    public String getMethod_type() {
+        return method_type;
+    }
+
+    public void setMethod_type(String method_type) {
+        this.method_type = method_type;
+    }
+
+    @Override
+    public String toString() {
+        return " ";
     }
 }

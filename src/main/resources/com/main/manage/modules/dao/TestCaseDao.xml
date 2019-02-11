@@ -88,9 +88,9 @@
 
     <!--接口相关-->
     <select id="getAllApiByUid"  resultType="com.main.manage.modules.entity.TestApiEntity">
-        SELECT t.id, t.project_id, t.module_id, t.version, t.api_name, t.api_protocol_type, t.domain, t.uri, t.status, a.project, b.module
-        FROM at_project_api t left join at_project a on t.project_id = a.id
-        left join at_project_module b on t.module_id = b.id
+        SELECT t.id, t.project_id, t.module_id, t.version, t.api_name, t.protocol_type, t.method_type, t.domain, t.uri, t.status, a.project, b.module, a.update_time
+        FROM at_project_api t LEFT JOIN at_project a ON t.project_id = a.id
+        LEFT JOIN at_project_module b ON t.module_id = b.id
         WHERE 1=1
         AND t.status != -1
         <choose>
@@ -105,11 +105,16 @@
             AND t.api_name LIKE CONCAT('%',#{key_word},'%')
         </if>
         <choose>
-            <when test="moduleList != null and moduleList.size() > 0">
-                AND t.module_id in
-                <foreach item="id" collection="moduleList" open="(" close=")" separator=",">
+            <when test="moduleOrProjectList != null and moduleOrProjectList.size() > 0">
+                AND ( t.module_id in
+                <foreach item="id" collection="moduleOrProjectList" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+                OR t.project_id in
+                <foreach item="id" collection="moduleOrProjectList" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+                )
             </when>
             <otherwise>
                 AND 1=2
@@ -140,11 +145,16 @@
             AND t.api_name LIKE CONCAT('%',#{key_word},'%')
         </if>
         <choose>
-            <when test="moduleList != null and moduleList.size() > 0">
-                AND t.module_id in
-                <foreach item="id" collection="moduleList" open="(" close=")" separator=",">
+            <when test="moduleOrProjectList != null and moduleOrProjectList.size() > 0">
+                AND ( t.module_id in
+                <foreach item="id" collection="moduleOrProjectList" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+                OR t.project_id in
+                <foreach item="id" collection="moduleOrProjectList" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+                )
             </when>
             <otherwise>
                 AND 1=2
@@ -184,16 +194,30 @@
     </select>
 
     <insert id="insertTestApi">
-        insert into at_project_api( project_id, module_id, api_name, api_protocol_type, domain, uri) values (#{projectId}, #{moduleId}, #{apiName}, #{apiProtoType}, #{domain}, #{uri})
+        insert into at_project_api( project_id, module_id, api_name, protocol_type, method_type, domain, uri) values (#{projectId}, #{moduleId}, #{apiName}, #{apiProtoType}, #{apiMethodType}, #{domain}, #{uri})
     </insert>
 
     <update id="updateTestApi">
         update at_project_api t
-        set t.module_id = #{moduleId},
-             t.api_protocol_type = #{apiProtoType},
-             t.domain = #{domain},
-             t.uri = #{uri},
-             t.api_name = #{apiName}
+        set t.method_type = #{apiMethodType}
+            <if test="moduleId != null and moduleId != ''">
+                ,t.module_id = #{moduleId}
+            </if>
+            <if test="apiProtoType != null and apiProtoType != ''">
+                ,t.protocol_type = #{apiProtoType}
+            </if>
+            <if test="apiMethodType != null and apiMethodType != ''">
+                ,t.method_type = #{apiMethodType}
+            </if>
+            <if test="domain != null and domain != ''">
+                ,t.domain = #{domain}
+            </if>
+            <if test="uri != null and uri != ''">
+                ,t.uri = #{uri}
+            </if>
+            <if test="apiName != null and apiName != ''">
+                ,t.api_name = #{apiName}
+            </if>
         where t.id = #{id}
         and t.project_id = #{projectId}
     </update>
@@ -216,4 +240,73 @@
             #{id}
         </foreach>
     </update>
+
+    <select id="getApiByUid" resultType="com.main.manage.modules.entity.TestApiEntity">
+        SELECT t.id, t.project_id, t.api_name, t.protocol_type, t.method_type, t.domain, t.uri
+        FROM
+        at_project_api t JOIN at_project a ON t.project_id = a.id
+        WHERE 1=1
+        <choose>
+            <when test="uid != null">
+                AND a.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="apiId != null">
+                AND t.id = #{apiId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getApiInfoByAid" resultType="com.main.manage.modules.entity.ApiInfoEntity">
+        SELECT t.id, t.api_id, t.param_type, t.request_key, t.request_value, t.is_correlation, t.status
+        FROM
+        at_api_info t
+        WHERE 1=1
+        AND t.status = 0
+        <choose>
+            <when test="apiId != null">
+                AND t.api_id = #{apiId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+    </select>
+
+    <delete id="deleteApiInfoByAid">
+        DELETE FROM at_api_info
+        WHERE 1=1
+        <choose>
+            <when test="apiId != null">
+                AND api_id = #{apiId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+    </delete>
+
+    <insert id ="insertApiInfoBatch" parameterType="java.util.List">
+        INSERT INTO at_api_info
+        (api_id, param_type, request_key, request_value, is_correlation)
+        values
+        <foreach collection ="list" item="apiInfoEntity" index= "index" separator =",">
+            (
+            #{apiInfoEntity.api_id},
+            #{apiInfoEntity.param_type},
+            #{apiInfoEntity.request_key},
+            #{apiInfoEntity.request_value},
+            #{apiInfoEntity.is_correlation}
+            )
+        </foreach >
+    </insert>
+
+
  </mapper>
