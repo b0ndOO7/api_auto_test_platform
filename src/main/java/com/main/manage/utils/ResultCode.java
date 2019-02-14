@@ -12,7 +12,8 @@ public enum ResultCode {
     PARAMETER_NULL(10101, "参数为空"),
     UID_NULL(10102, "UID为空"),
     ADD_FAIL(20001, "新增失败"),
-    EDIT_FAIL(20002, "修改失败");
+    EDIT_FAIL(20002, "修改失败"),
+    SAVE_FAIL(20003, "保存失败");
 
 
     private int code;

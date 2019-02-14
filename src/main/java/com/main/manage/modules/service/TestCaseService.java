@@ -1,7 +1,9 @@
 package com.main.manage.modules.service;
 
 import com.main.manage.modules.dao.TestCaseDao;
-import com.main.manage.modules.entity.*;
+import com.main.manage.modules.entity.ApiInfoEntity;
+import com.main.manage.modules.entity.ProjectHostEntity;
+import com.main.manage.modules.entity.TestApiEntity;
 import com.main.manage.utils.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +28,8 @@ public class TestCaseService {
      * @param projectId
      * @return
      */
-    public List getTestCaseListByPid(String uid, String projectId) {
-        return testCaseDao.findTestCaseByProjectId(uid, projectId);
+    public List getTestCaseListByPid(String uid, String projectId, String moduleId) {
+        return testCaseDao.findTestCaseByPId(uid,  projectId, moduleId);
     }
 
     /**
@@ -36,6 +38,9 @@ public class TestCaseService {
      * @return
      */
     public List<ProjectHostEntity> getProjectHostsByUid(String uid) {
+
+        Map<String, Object> returnMap = new HashMap<>();
+
         return testCaseDao.getProjectHostListByUid(uid);
     }
 
@@ -245,4 +250,24 @@ public class TestCaseService {
 
         return isDelete && isInsert;
     }
+
+
+    /**
+     * 保存测试用例
+     * @param caseId
+     * @param projectId
+     * @param moduleId
+     * @param caseName
+     * @param caseDesc
+     * @param status
+     * @return
+     */
+    public boolean saveTestCase(int caseId, int projectId, int moduleId, String caseName, String caseDesc, String status){
+        if (StringUtils.isEmpty(caseId)) {
+            return testCaseDao.insertTestCase(projectId, moduleId, caseName, caseDesc);
+        } else {
+            return testCaseDao.updateTestCase(caseId, projectId, moduleId, caseName, caseDesc, status);
+        }
+    }
+
 }

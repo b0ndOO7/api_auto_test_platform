@@ -3,7 +3,8 @@ package com.main.manage.modules.controller;
 import com.main.manage.RestTemplate.Result;
 import com.main.manage.modules.entity.ProjectHostEntity;
 import com.main.manage.modules.model.ApiInfoModel;
-import com.main.manage.modules.model.ProjectModel;
+import com.main.manage.modules.model.TestCaseModel;
+import com.main.manage.modules.model.TestCaseSeachModel;
 import com.main.manage.modules.model.UserModel;
 import com.main.manage.modules.service.TestCaseService;
 import com.main.manage.modules.service.TestExecService;
@@ -36,14 +37,14 @@ public class TestCaseController extends BaseController {
 
 
     @RequestMapping("getlist")
-    public Result getTestCaseByPid(@RequestHeader String uid, @RequestBody ProjectModel projectModel) {
-        log.info("getTestCaseByPid: uid:{}, pid:{}, reuestheader uid: {}", projectModel.getUid(), projectModel.getId(), uid);
-        if (StringUtils.isEmpty(uid) || StringUtils.isEmpty(projectModel.getId())) {
+    public Result getTestCaseByPid(@RequestHeader String uid, @RequestBody TestCaseSeachModel testCaseSeachModel) {
+        log.info("getTestCaseByPid: reuestheader uid: {}, requestbody", uid, FastJsonUtil.parseToJSON(testCaseSeachModel));
+
+        if (StringUtils.isEmpty(uid) || StringUtils.isEmpty(testCaseSeachModel.getProjectId())) {
             return ResultUtils.warn(ResultCode.PARAMETER_NULL);
         }
-//       testCaseService.getTestCaseListByPid(projectModel.getUid(), String.valueOf(projectModel.getId()));
 
-        return ResultUtils.success(testCaseService.getTestCaseListByPid(uid, String.valueOf(projectModel.getId())));
+        return ResultUtils.success(testCaseService.getTestCaseListByPid(uid, testCaseSeachModel.getProjectId(), testCaseSeachModel.getModuleId()));
     }
 
     @RequestMapping("hosts")
@@ -222,7 +223,12 @@ public class TestCaseController extends BaseController {
         }
     }
 
-    //
+    /**
+     * 保存接口信息
+     * @param uid
+     * @param requestMap
+     * @return
+     */
     @RequestMapping("saveapiinfo")
     public Result saveTestApiInfo(@RequestHeader String uid, @RequestBody Map<String, Object> requestMap) {
         log.info("saveTestApiInfo: {} ", requestMap);
@@ -273,6 +279,11 @@ public class TestCaseController extends BaseController {
     }
 
 
+    /**
+     * 调试接口
+     * @param apiInfoModel
+     * @return
+     */
     @RequestMapping("debugtestapi")
     public Result debugTestApi(@RequestBody ApiInfoModel apiInfoModel) {
         log.info("debugTestApi: {} ", FastJsonUtil.parseToJSON(apiInfoModel));
@@ -301,7 +312,6 @@ public class TestCaseController extends BaseController {
                 headerMap.put(tmpMap.get("request_key"), tmpMap.get("request_value"));
             }
         }
-
         String formStr = "";
         List<Map> requestForm = apiInfoModel.getForm();
         for (int i = 0, length=requestForm.size(); i < length; i++) {
@@ -335,11 +345,19 @@ public class TestCaseController extends BaseController {
                 break;
             default:
                 break;
-
         }
-
         return ResultUtils.success(httpResp);
     }
 
+    @RequestMapping("savecase")
+    public Result saveTestCase(@RequestHeader String uid, @RequestBody TestCaseModel testCaseModel) {
+        log.info("saveTestCase: ", FastJsonUtil.parseToJSON(testCaseModel));
+
+        if (StringUtils.isEmpty(testCaseModel.getProjectId())) {
+            return ResultUtils.warn(ResultCode.PARAMETER_NULL);
+        }
+        boolean isOK = testCaseService.saveTestCase(testCaseModel.getId(), testCaseModel.getProjectId(), testCaseModel.getModuleId(), testCaseModel.getCaseName(), testCaseModel.getCaseDesc(), testCaseModel.getStatus());
+        return isOK ? ResultUtils.success("保存成功"):ResultUtils.warn(ResultCode.SAVE_FAIL);
+    }
 
 }

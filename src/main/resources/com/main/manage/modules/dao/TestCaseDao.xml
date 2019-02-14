@@ -313,6 +313,7 @@
         select tc.id,
         tc.project_id,
         tc.case_name,
+        tc.case_desc,
         pa.api_name,
         concat(case when pa.protocol_type='' then 'http'
                     when pa.protocol_type is null then 'http'
@@ -344,5 +345,72 @@
         </choose>
         order by tc.update_time desc, tar.index
     </select>
+
+    <select id="findTestCaseByPId" resultType="com.main.manage.modules.entity.TestCaseEntity">
+        select tc.id,
+        tc.project_id,
+        tc.module_id,
+        tc.case_name,
+        tc.case_desc,
+        tc.status
+        from at_testcase tc
+        join at_project p on tc.project_id = p.id
+        where 1=1
+        <choose>
+            <when test="uid != null">
+                and p.uid = #{uid}
+            </when>
+            <otherwise>
+                and 1=2
+            </otherwise>
+        </choose>
+        <if test="moduleId != null and moduleId != ''">
+            and tc.module_id = #{moduleId}
+        </if>
+        <choose>
+            <when test="projectId != null">
+                and tc.project_id = #{projectId}
+            </when>
+            <otherwise>
+                and 1=2
+            </otherwise>
+        </choose>
+        order by tc.update_time desc
+    </select>
+
+    <insert id ="insertTestCase">
+        INSERT INTO at_testcase
+        (project_id, module_id, case_name, case_desc)
+        values
+       (#{projectId}, #{moduleId}, #{caseName}, #{caseDesc} )
+    </insert>
+
+    <update id="updateTestCase">
+        update at_testcase t
+        left join at_project a on t.project_id = a.id
+        set t.case_name = #{caseName}
+        <if test="projectId != null and projectId != ''">
+            ,t.project_id = #{projectId}
+        </if>
+        <if test="moduleId != null and moduleId != ''">
+            ,t.module_id = #{moduleId}
+        </if>
+        <if test="caseDesc != null and caseDesc != ''">
+            ,t.case_desc = #{caseDesc}
+        </if>
+        <if test="status != null and status != ''">
+            ,t.status = #{status}
+        </if>
+        where 1 = 1
+        and t.id = #{caseId}
+        <choose>
+            <when test="uid != null">
+                and a.uid = #{uid}
+            </when>
+            <otherwise>
+                and 1=1
+            </otherwise>
+        </choose>
+    </update>
 
  </mapper>

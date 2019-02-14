@@ -18,6 +18,7 @@ public interface ProjectDao {
     List<ProjectEntity> getAllUserProjectByUid(@Param("uid")String uid);
 
     List<ModuleEntity> getUserProjectAndModuleByUid(@Param("uid")String uid);
+    List<ModuleEntity> getModuleByProjectId(@Param("uid")String uid, @Param("projectId")String projectId);
 
     List<HashMap> getVersionsByProjectId(@Param("uid")String uid, @Param("projectId")String projectId);
 

@@ -53,6 +53,16 @@ public class ProjectService {
 
         return moduleEntityList;
     }
+    /**
+     * 根据项目id查询项目及项目模块
+     * @param uid
+     * @return
+     */
+    public List<ModuleEntity> getModuleByPid(String uid, String projectId) {
+        List<ModuleEntity> moduleEntityList = projectDao.getModuleByProjectId(uid, projectId);
+
+        return moduleEntityList;
+    }
 
     /**
      * 根据项目id获取项目版本

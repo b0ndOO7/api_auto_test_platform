@@ -89,6 +89,27 @@
         )
     </select>
 
+    <select id="getModuleByProjectId"  resultType="com.main.manage.modules.entity.ModuleEntity">
+        select a.id, project_id, a.module, a.parent_id, a.status
+        from at_project_module a join at_project b on a.project_id = b.id
+        where a.status != -1
+        <choose>
+            <when test="uid != null">
+                and b.id = #{uid}
+            </when>
+            <otherwise>
+                and 1=2
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="projectId != null">
+                and a.project_id = #{projectId}
+            </when>
+            <otherwise>
+                and 1=2
+            </otherwise>
+      </choose>
+    </select>
 
 
     <insert id="addProject" parameterType="com.main.manage.modules.entity.ProjectEntity" useGeneratedKeys="true" keyProperty="id">
@@ -119,7 +140,7 @@
             <otherwise>
                 AND 1=2
             </otherwise>
-        </choose>;
+        </choose>
     </update>
 
     <update id="deleteProjectByIds">

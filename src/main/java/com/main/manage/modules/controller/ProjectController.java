@@ -5,12 +5,14 @@ import com.main.manage.modules.entity.ModuleEntity;
 import com.main.manage.modules.entity.ModuleTree;
 import com.main.manage.modules.model.ProjectModel;
 import com.main.manage.modules.service.ProjectService;
+import com.main.manage.utils.FastJsonUtil;
 import com.main.manage.utils.ResultCode;
 import com.main.manage.utils.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -66,17 +68,32 @@ public class ProjectController extends BaseController {
 
     /**
      * 获取项目树型结构
-     * @param map
      * @return
      */
     @RequestMapping("getprojectandmodule")
-    public Result getUserProjectAndModule(@RequestBody Map<String,String> map) {
-        String uid = map.get("uid");
+    public Result getUserProjectAndModule(@RequestHeader String uid) {
         if ( StringUtils.isEmpty(uid)) {
             ResultUtils.warn(ResultCode.PARAMETER_NULL, "UID不能为空");
         }
         List<ModuleEntity> moduleEntityList = projectService.getUserProjectAndModuleByUid(uid);
         return ResultUtils.success(new ModuleTree().getMenuList(moduleEntityList));
+    }
+
+    /**
+     * 根据项目id获取模块信息
+     * @param uid
+     * @param map
+     * @return
+     */
+    @RequestMapping("getmodule")
+    public Result getModuleByProjectId(@RequestHeader String uid, @RequestBody Map<String, String> map) {
+        if ( StringUtils.isEmpty(uid)) {
+            ResultUtils.warn(ResultCode.PARAMETER_NULL, "UID不能为空");
+        }
+        List<ModuleEntity> moduleEntityList = projectService.getModuleByPid(uid, map.get("id"));
+        log.info("moduleEntityList:{}", FastJsonUtil.parseToJSON(moduleEntityList));
+
+        return ResultUtils.success(new ModuleTree().getMenuListNoProject(moduleEntityList));
     }
 
     /**

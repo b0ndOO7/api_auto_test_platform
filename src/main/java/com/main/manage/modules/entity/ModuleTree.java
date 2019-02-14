@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class ModuleTree {
 
-    public static Map<String,Object> mapArray = new LinkedHashMap<String, Object>();
     public List<ModuleEntity> moduleEntityList;
     public List<Object> list = new ArrayList<Object>();
 
@@ -88,5 +87,49 @@ public class ModuleTree {
         return lists;
     }
 
+
+    public List<Object> getMenuListNoProject(List<ModuleEntity> moduleEntities){
+        this.moduleEntityList = moduleEntities;
+        for (ModuleEntity moduleEntity : moduleEntities) {
+            Map<String,Object> mapArr = new LinkedHashMap<String, Object>();
+            if( String.valueOf(0).equals(moduleEntity.getParent_id()) ){
+                mapArr.put("id", moduleEntity.getId());
+                mapArr.put("label", moduleEntity.getModule());
+                mapArr.put("projectid", moduleEntity.getProject_id());
+                mapArr.put("project", moduleEntity.getProject());
+                mapArr.put("module", moduleEntity.getModule());
+                mapArr.put("parentid", moduleEntity.getParent_id());
+                mapArr.put("status", moduleEntity.getStatus());
+                List<?> tmpList = moduleChildNoProject(moduleEntity.getId());
+                if (tmpList.size()>0) {
+                    mapArr.put("children", tmpList);
+                }
+                list.add(mapArr);
+            }
+        }
+        return list;
+    }
+
+    public List<?> moduleChildNoProject(String moduleId){
+        List<Object> lists = new ArrayList<Object>();
+        for(ModuleEntity moduleEntity : moduleEntityList){
+            Map<String,Object> childArray = new LinkedHashMap<String, Object>();
+            if ( moduleId.equals(moduleEntity.getParent_id())) {
+                childArray.put("id", moduleEntity.getId());
+                childArray.put("label", moduleEntity.getModule());
+//                childArray.put("projectid", moduleEntity.getProject_id());
+//                childArray.put("project", moduleEntity.getProject());
+                childArray.put("module", moduleEntity.getModule());
+                childArray.put("parentid", moduleEntity.getParent_id());
+                childArray.put("status", moduleEntity.getStatus());
+                List<?> list = moduleChildNoProject(moduleEntity.getId());
+                if (list.size()>0) {
+                    childArray.put("children", list);
+                }
+                lists.add(childArray);
+            }
+        }
+        return lists;
+    }
 
 }

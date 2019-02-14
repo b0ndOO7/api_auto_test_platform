@@ -11,8 +11,10 @@ import java.util.List;
 public interface TestCaseDao {
 
     List<TestCaseEntity> findTestCaseByProjectId(@Param("uid")String uid, @Param("projectId")String projectId);
+    List<TestCaseEntity> findTestCaseByPId(@Param("uid")String uid, @Param("projectId")String projectId, @Param("moduleId")String moduleId);
 
     List<ProjectHostEntity> getProjectHostListByUid(@Param("uid")String uid);
+//    int getTotalHostListByUid(@Param("uid")String uid);
 
     String checkProjectOwner(@Param("projectId")String projectId);
 
@@ -44,5 +46,8 @@ public interface TestCaseDao {
 
     boolean deleteApiInfoByAid(@Param("apiId")String apiId);
     boolean insertApiInfoBatch(List<ApiInfoEntity> apiInfoEntityList);
+
+    boolean insertTestCase(@Param("projectId")int projectId, @Param("moduleId")int moduleId, @Param("caseName")String caseName, @Param("caseDesc")String caseDesc);
+    boolean updateTestCase(@Param("caseId")int caseId, @Param("projectId")int projectId, @Param("moduleId")int moduleId, @Param("caseName")String caseName, @Param("caseDesc")String caseDesc, @Param("status")String status);
 
 }
