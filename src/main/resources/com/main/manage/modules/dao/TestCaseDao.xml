@@ -123,10 +123,8 @@
         <if test="startRow != null">
             ORDER BY t.update_time desc limit #{startRow},#{pageSize}
         </if>
-
     </select>
 
-    <!--接口相关-->
     <select id="getTotalApiByUid"  resultType="Integer">
         SELECT count(1)
         FROM at_project_api t left join at_project a
@@ -160,6 +158,31 @@
                 AND 1=2
             </otherwise>
         </choose>
+    </select>
+
+    <select id="getAllApiByPid"  resultType="com.main.manage.modules.entity.TestApiEntity">
+        SELECT t.id, t.project_id, t.module_id, t.version, t.api_name, t.protocol_type, t.method_type, t.domain, t.uri, t.status, a.project, '' as module, a.update_time
+        FROM at_project_api t JOIN at_project a ON t.project_id = a.id
+        WHERE 1=1
+        AND t.status != -1
+        AND a.status != -1
+        <choose>
+            <when test="uid != null">
+                AND a.uid = #{uid}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="projectId != null">
+                AND a.id = #{projectId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+        ORDER BY t.module_id
     </select>
 
     <select id="isExstsTestApi" resultType="String">
@@ -308,7 +331,6 @@
         </foreach >
     </insert>
 
-
     <select id="findTestCaseByProjectId" resultType="com.main.manage.modules.entity.TestCaseEntity">
         select tc.id,
         tc.project_id,
@@ -403,14 +425,31 @@
         </if>
         where 1 = 1
         and t.id = #{caseId}
+    </update>
+
+    <select id="getTestCaseStep" resultType="com.main.manage.modules.entity.TestCaseStepEntity">
+        select ar.index, ar.id as relationId, ar.case_id, ar.api_id, ap.api_name, ap.method_type, a.module_id,
+                concat(case when ap.protocol_type='' then 'http'
+                            when ap.protocol_type is null then 'http'
+                            else lower(ap.protocol_type)
+                            end,
+                        '://', ap.domain, ap.uri) url,
+                ar.status
+        from at_testcase_api_relation ar
+        join at_testcase a on a.id = ar.case_id
+        join at_project_api ap on ar.api_id = ap.id
+        where 1=1
+        and ap.status != -1 and ar.status != -1 and a.status != -1
         <choose>
-            <when test="uid != null">
-                and a.uid = #{uid}
+            <when test="caseId != null">
+                and ar.case_id = #{caseId}
             </when>
             <otherwise>
-                and 1=1
+                and 1=2
             </otherwise>
         </choose>
-    </update>
+        order by ar.index
+    </select>
+
 
  </mapper>

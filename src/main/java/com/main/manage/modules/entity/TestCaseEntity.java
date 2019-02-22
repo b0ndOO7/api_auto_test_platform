@@ -4,7 +4,7 @@ public class TestCaseEntity {
 
     private int id;
     private int project_id;
-    private int module_id;
+    private String module_id;
     private String case_name;
     private String case_desc;
     private String api_name;
@@ -28,11 +28,11 @@ public class TestCaseEntity {
         this.project_id = project_id;
     }
 
-    public int getModule_id() {
+    public String getModule_id() {
         return module_id;
     }
 
-    public void setModule_id(int module_id) {
+    public void setModule_id(String module_id) {
         this.module_id = module_id;
     }
 

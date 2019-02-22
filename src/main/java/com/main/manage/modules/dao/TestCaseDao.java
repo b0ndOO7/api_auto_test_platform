@@ -26,8 +26,8 @@ public interface TestCaseDao {
 
     //api 接口相关
     List<TestApiEntity> getAllApiByUid(@Param("uid")String uid, @Param("key_word")String key_word, @Param("startRow")int startRow, @Param("pageSize")int pageSize, @Param("moduleOrProjectList")List<String> moduleOrProjectList );
+    List<TestApiEntity> getAllApiByPid(@Param("uid")String uid, @Param("projectId")int projectId);
     Integer getTotalApiByUid(@Param("uid")String uid, @Param("key_word")String key_word, @Param("moduleOrProjectList")List<String> moduleOrProjectList);
-    List<TestApiEntity> getApiListByUid(String uid, String key_word, String modulesId, int startRow, int pageSize);
     String isExstsTestApi(@Param("uid")String uid, @Param("projectId")String projectId, @Param("apiId")String apiId);
     boolean insertTestApi(@Param("projectId")String projectId, @Param("moduleId")String moduleId, @Param("apiName")String apiName,
                           @Param("apiProtoType")String apiProtoType,
@@ -47,7 +47,8 @@ public interface TestCaseDao {
     boolean deleteApiInfoByAid(@Param("apiId")String apiId);
     boolean insertApiInfoBatch(List<ApiInfoEntity> apiInfoEntityList);
 
-    boolean insertTestCase(@Param("projectId")int projectId, @Param("moduleId")int moduleId, @Param("caseName")String caseName, @Param("caseDesc")String caseDesc);
-    boolean updateTestCase(@Param("caseId")int caseId, @Param("projectId")int projectId, @Param("moduleId")int moduleId, @Param("caseName")String caseName, @Param("caseDesc")String caseDesc, @Param("status")String status);
+    boolean insertTestCase(@Param("projectId")int projectId, @Param("moduleId")String moduleId, @Param("caseName")String caseName, @Param("caseDesc")String caseDesc);
+    boolean updateTestCase(@Param("caseId")int caseId, @Param("projectId")int projectId, @Param("moduleId")String moduleId, @Param("caseName")String caseName, @Param("caseDesc")String caseDesc, @Param("status")String status);
+    List<TestCaseStepEntity> getTestCaseStep(@Param("caseId")int caseId);
 
 }

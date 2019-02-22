@@ -29,7 +29,7 @@ public class TestCaseService {
      * @return
      */
     public List getTestCaseListByPid(String uid, String projectId, String moduleId) {
-        return testCaseDao.findTestCaseByPId(uid,  projectId, moduleId);
+        return testCaseDao.findTestCaseByPId(uid, projectId, moduleId);
     }
 
     /**
@@ -80,7 +80,7 @@ public class TestCaseService {
      * @param uid
      * @return
      */
-    public HashMap<String, Object> getApiListByUid(String uid, String key_word, int curPage, int pageSize, List<String> searchScope) {
+    public HashMap<String, Object> getApiList(String uid, String key_word, int curPage, int pageSize, List<String> searchScope) {
 
         List<String> moduleList = new ArrayList<>();
         log.info("searchScope:{}" ,searchScope);
@@ -102,6 +102,18 @@ public class TestCaseService {
         returnMap.put("totalRow", total);
 
         return returnMap;
+    }
+
+    /**
+     * 获取用户接口
+     * @param uid
+     * @return
+     */
+    public List getApiListByPid(String uid, int projectId) {
+
+        List<TestApiEntity> testApiEntityList = testCaseDao.getAllApiByPid(uid, projectId);
+
+        return testApiEntityList;
     }
 
     /**
@@ -262,12 +274,23 @@ public class TestCaseService {
      * @param status
      * @return
      */
-    public boolean saveTestCase(int caseId, int projectId, int moduleId, String caseName, String caseDesc, String status){
-        if (StringUtils.isEmpty(caseId)) {
+    public boolean saveTestCase(int caseId, int projectId, String moduleId, String caseName, String caseDesc, String status){
+        if (StringUtils.isEmpty(caseId) || caseId == 0) {
             return testCaseDao.insertTestCase(projectId, moduleId, caseName, caseDesc);
         } else {
             return testCaseDao.updateTestCase(caseId, projectId, moduleId, caseName, caseDesc, status);
         }
+    }
+
+    /**
+     * 查询用例步骤
+     * @param uid
+     * @param caseId
+     * @return
+     */
+    public List getTestCaseStepsByCaseId(String uid, int caseId) {
+
+        return testCaseDao.getTestCaseStep(caseId);
     }
 
 }

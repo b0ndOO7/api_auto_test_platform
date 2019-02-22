@@ -2,19 +2,19 @@ package com.main.manage.modules.model;
 
 public class TestCaseModel {
 
-    private int id;
+    private int caseId;
     private int projectId;
-    private int moduleId;
+    private String moduleId;
     private String caseName;
     private String caseDesc;
     private String status;
 
-    public int getId() {
-        return id;
+    public int getCaseId() {
+        return caseId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setCaseId(int caseId) {
+        this.caseId = caseId;
     }
 
     public int getProjectId() {
@@ -25,11 +25,11 @@ public class TestCaseModel {
         this.projectId = projectId;
     }
 
-    public int getModuleId() {
+    public String getModuleId() {
         return moduleId;
     }
 
-    public void setModuleId(int moduleId) {
+    public void setModuleId(String moduleId) {
         this.moduleId = moduleId;
     }
 

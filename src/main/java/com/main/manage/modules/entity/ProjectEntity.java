@@ -35,6 +35,8 @@ public class ProjectEntity {
         this.uid = uid;
     }
 
+    public ProjectEntity(){}
+
     public Integer getId() {
         return id;
     }
