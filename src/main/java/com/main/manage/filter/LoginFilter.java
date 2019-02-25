@@ -50,7 +50,7 @@ public class LoginFilter implements Filter {
                 return;
             }
              String userId = (String) redisService.get(RedisKeys.LOGIN_TOKEN + uid + "_" + token);
-            if(userId == null){
+            if(userId == null || StringUtils.isEmpty(uid) || !uid.equals(userId)){
                 log.info("用户token不匹配，需重新登录");
                 PrintWriter out = response.getWriter();
                 out.print(FastJsonUtil.parseToJSON(ResultUtils.warn(ResultCode.USER_NOT_LOGIN)));

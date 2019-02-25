@@ -343,7 +343,7 @@
                     end,
                 '://', pa.domain, pa.uri) url,
         tc.status,
-        tar.index
+        tar.step_index as index
         from at_testcase tc
         join at_project p on tc.project_id = p.id
         join at_testcase_api_relation tar on tc.id = tar.case_id
@@ -365,7 +365,7 @@
                 and 1=2
             </otherwise>
         </choose>
-        order by tc.update_time desc, tar.index
+        order by tc.update_time desc, tar.step_index
     </select>
 
     <select id="findTestCaseByPId" resultType="com.main.manage.modules.entity.TestCaseEntity">
@@ -428,7 +428,7 @@
     </update>
 
     <select id="getTestCaseStep" resultType="com.main.manage.modules.entity.TestCaseStepEntity">
-        select ar.index, ar.id as relationId, ar.case_id, ar.api_id, ap.api_name, ap.method_type, a.module_id,
+        select ar.step_index as 'index', ar.id as relationId, ar.case_id, ar.api_id, ap.api_name, ap.method_type, a.module_id,
                 concat(case when ap.protocol_type='' then 'http'
                             when ap.protocol_type is null then 'http'
                             else lower(ap.protocol_type)
@@ -448,8 +448,47 @@
                 and 1=2
             </otherwise>
         </choose>
-        order by ar.index
+        order by ar.step_index
     </select>
 
+    <insert id ="insertTestCaseStep">
+        INSERT INTO at_testcase_api_relation
+        (case_id, api_id, step_index)
+        value
+       (#{caseId}, #{apiId}, #{index})
+    </insert>
 
+    <update id="updateTestCaseStep">
+        update at_testcase_api_relation t
+        set t.step_index = #{index}
+        <if test="status != null and status != ''">
+            ,t.status = #{status}
+        </if>
+        where 1 = 1
+        and t.id = #{id}
+    </update>
+
+    <delete id="deleteTestCaseStepById">
+        DELETE FROM at_testcase_api_relation
+        WHERE 1=1
+        AND id = #{id}
+    </delete>
+
+
+    <!--接口数据-->
+    <select id="getTestCaseStepDataByRelationId" resultType="com.main.manage.modules.entity.ApiInfoEntity">
+        SELECT t.id, t.relation_id, t.case_id, t.api_id, t.param_type, t.request_key, t.request_value, t.is_correlation, t.status
+        FROM
+        at_testcase_data t
+        WHERE 1=1
+        AND t.status != -1
+        <choose>
+            <when test="relationId != null">
+                AND t.relation_id = #{relationId}
+            </when>
+            <otherwise>
+                AND 1=2
+            </otherwise>
+        </choose>
+    </select>
  </mapper>

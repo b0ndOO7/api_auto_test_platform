@@ -2,9 +2,7 @@ package com.main.manage.modules.controller;
 
 import com.main.manage.RestTemplate.Result;
 import com.main.manage.modules.entity.ProjectHostEntity;
-import com.main.manage.modules.model.TestCaseModel;
-import com.main.manage.modules.model.TestCaseSeachModel;
-import com.main.manage.modules.model.UserModel;
+import com.main.manage.modules.model.*;
 import com.main.manage.modules.service.TestCaseService;
 import com.main.manage.modules.service.TestExecService;
 import com.main.manage.utils.FastJsonUtil;
@@ -114,6 +112,41 @@ public class TestCaseController extends BaseController {
         log.info("CaseSteps: {}", FastJsonUtil.parseToJSON(list));
 
         return ResultUtils.success(list);
+    }
+
+    /**
+     * 保存测试用例步骤
+     * @param uid
+     * @param testCaseStepSaveModel
+     * @return
+     */
+    @RequestMapping("savesteps")
+    public Result saveTestCaseSteps(@RequestHeader String uid, @RequestBody TestCaseStepSaveModel testCaseStepSaveModel) {
+        log.info("saveTestCaseSteps: {}", FastJsonUtil.parseToJSON(testCaseStepSaveModel));
+
+        if (StringUtils.isEmpty(testCaseStepSaveModel.getCaseId()) || testCaseStepSaveModel.getCaseId() < 1) {
+            return ResultUtils.warn(ResultCode.PARAMETER_NULL, "TestCaseId为空");
+        }
+        boolean isOK = testCaseService.saveTestCaseStepsByCaseId(uid, testCaseStepSaveModel.getCaseId(), testCaseStepSaveModel.getTestCaseSteps());
+
+        return ResultUtils.success(isOK);
+    }
+
+    /**
+     * 获取步骤 测试数据
+     * @param uid
+     * @param testCaseStepDataModel
+     * @return
+     */
+    @RequestMapping("getstepdata")
+    public Result getCaseStepData(@RequestHeader String uid, @RequestBody TestCaseStepDataModel testCaseStepDataModel) {
+        log.info("getCaseStepData: {}", FastJsonUtil.parseToJSON(testCaseStepDataModel));
+
+        if (StringUtils.isEmpty(uid) || StringUtils.isEmpty(testCaseStepDataModel.getApiId())) {
+            return ResultUtils.warn(ResultCode.PARAMETER_NULL, "UID及ApiId不能为空");
+        }
+
+        return ResultUtils.success(testCaseService.getCaseStepDataByRelationId(testCaseStepDataModel.getApiId(), testCaseStepDataModel.getRelationId()));
     }
 
 }

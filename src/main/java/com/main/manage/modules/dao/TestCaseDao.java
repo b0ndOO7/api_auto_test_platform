@@ -49,6 +49,14 @@ public interface TestCaseDao {
 
     boolean insertTestCase(@Param("projectId")int projectId, @Param("moduleId")String moduleId, @Param("caseName")String caseName, @Param("caseDesc")String caseDesc);
     boolean updateTestCase(@Param("caseId")int caseId, @Param("projectId")int projectId, @Param("moduleId")String moduleId, @Param("caseName")String caseName, @Param("caseDesc")String caseDesc, @Param("status")String status);
+
+    //测试步骤相关
     List<TestCaseStepEntity> getTestCaseStep(@Param("caseId")int caseId);
+    List<TestCaseStepDataEntity> getTestCaseStepDataByRelationId(@Param("relationId")int relationId);
+    List<TestCaseStepEntity> getTestCaseStep(@Param("caseId")int caseId, @Param("apiId")int apiId);
+    boolean insertTestCaseStep(@Param("caseId")int caseId, @Param("apiId")int apiId, @Param("index")int index);
+    boolean updateTestCaseStep(@Param("id")int id, @Param("index")int index, @Param("status") String status);
+    boolean deleteTestCaseStep(@Param("caseId")int caseId, @Param("apiId")int apiId);
+    boolean deleteTestCaseStepById(@Param("id")int id);
 
 }

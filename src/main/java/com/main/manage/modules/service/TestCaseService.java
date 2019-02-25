@@ -1,9 +1,8 @@
 package com.main.manage.modules.service;
 
 import com.main.manage.modules.dao.TestCaseDao;
-import com.main.manage.modules.entity.ApiInfoEntity;
-import com.main.manage.modules.entity.ProjectHostEntity;
-import com.main.manage.modules.entity.TestApiEntity;
+import com.main.manage.modules.entity.*;
+import com.main.manage.utils.FastJsonUtil;
 import com.main.manage.utils.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -291,6 +290,142 @@ public class TestCaseService {
     public List getTestCaseStepsByCaseId(String uid, int caseId) {
 
         return testCaseDao.getTestCaseStep(caseId);
+    }
+
+    /**
+     *  保存测试步骤
+     * @param uid
+     * @param caseId
+     * @param testCaseStepEntities
+     * @return
+     */
+    public boolean saveTestCaseStepsByCaseId(String uid, int caseId, TestCaseStepEntity[] testCaseStepEntities) {
+
+        boolean isOK = true;
+//        for (int i = 0, length = testCaseStepEntities.length; i < length; i++) {
+//            int apiId = testCaseStepEntities[i].getApi_id();
+//            // 查询是否存在测试步骤，若存在，则更新之；若不存在，插入操作；
+//            List<TestCaseStepEntity> testCaseSteps = testCaseDao.getTestCaseStep(caseId, apiId);
+//            if (testCaseSteps.size() > 0) {
+//                isOK = testCaseDao.updateTestCaseStep(testCaseSteps.get(0).getRelationId(), i, "0");
+//            } else {
+//                isOK =testCaseDao.insertTestCaseStep(caseId, apiId, i);
+//            }
+//        }
+
+        //筛选出db中需要删除的步骤，并删除
+        List<TestCaseStepEntity> testCaseStepEntitylist = testCaseDao.getTestCaseStep(caseId);
+        for (int i = 0, size = testCaseStepEntitylist.size(); i < size; i++) {
+            TestCaseStepEntity dbTestCaseStep = testCaseStepEntitylist.get(i);
+            boolean isNeedDel = true;
+            for (int j = 0, length = testCaseStepEntities.length; j < length; j++) {
+                TestCaseStepEntity requestTestCaseStep = testCaseStepEntities[j];
+                //判断是否需要删除测试步骤
+                if (requestTestCaseStep.getApi_id() == dbTestCaseStep.getApi_id() && requestTestCaseStep.getCase_id() == dbTestCaseStep.getCase_id()) {
+                    isNeedDel = false;
+                    // 判断 排序是否需要更新
+                    if (dbTestCaseStep.getIndex() != requestTestCaseStep.getIndex()) {
+                        if (! testCaseDao.updateTestCaseStep(dbTestCaseStep.getRelationId(), requestTestCaseStep.getIndex(), "0") ) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            if (isNeedDel) {
+                if (! testCaseDao.deleteTestCaseStepById(dbTestCaseStep.getRelationId()))
+                    return false;
+            }
+        }
+
+        // 筛选出需要插入的步骤，并做插入操作
+        testCaseStepEntitylist = testCaseDao.getTestCaseStep(caseId);
+        for (int i = 0, length = testCaseStepEntities.length; i < length; i++) {
+            TestCaseStepEntity requestTestCaseStep = testCaseStepEntities[i];
+            boolean isExist = false;
+            for (int j = 0, size = testCaseStepEntitylist.size(); j < size; j++) {
+                TestCaseStepEntity dbTestCaseStep = testCaseStepEntitylist.get(j);
+                if ( requestTestCaseStep.getApi_id() == dbTestCaseStep.getApi_id() && requestTestCaseStep.getCase_id() == dbTestCaseStep.getCase_id() && dbTestCaseStep.getIndex() == requestTestCaseStep.getIndex()) {
+                    isExist = true;
+                }
+            }
+            if (! isExist) {
+                if (! testCaseDao.insertTestCaseStep(requestTestCaseStep.getCase_id(), requestTestCaseStep.getApi_id(), requestTestCaseStep.getIndex()))
+                    return false;
+            }
+        }
+
+        return isOK;
+    }
+
+
+    /**
+     * 获取测试数据
+     * @param relationId
+     * @return
+     */
+    public Map<String, Object> getCaseStepDataByRelationId(int apiId, int relationId) {
+
+        List<TestCaseStepDataEntity> stepsData = testCaseDao.getTestCaseStepDataByRelationId(relationId);
+
+        Map<String, Object> returnMap = new HashMap<>();
+        //若测试步骤数据为空，刚返回api数据模板
+        if (stepsData.size() == 0) {
+            List<ApiInfoEntity> apiData = testCaseDao.getApiInfoByAid(String.valueOf(apiId));
+            List<ApiInfoEntity> headers = new ArrayList<>();
+            List<ApiInfoEntity> bodys = new ArrayList<>();
+
+            for (int i = 0, size = apiData.size(); i < size; i++) {
+                ApiInfoEntity apiInfoEntity = apiData.get(i);
+                String paramType = apiInfoEntity.getParam_type();
+                apiInfoEntity.setId(0); //id置为0
+                switch (paramType){
+                    case "header":
+                        headers.add(apiInfoEntity);
+                        break;
+                    case "form":
+                        bodys.add(apiInfoEntity);
+                        returnMap.put("bodytype", "form");
+                        break;
+                    case "json":
+                        returnMap.put("jsonstr", apiInfoEntity.getRequest_value());
+                        returnMap.put("bodytype", "json");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            returnMap.put("headers", headers);
+            returnMap.put("form", bodys);
+        } else if (stepsData.size() > 0) {
+            List<TestCaseStepDataEntity> headers = new ArrayList<>();
+            List<TestCaseStepDataEntity> bodys = new ArrayList<>();
+            for (int i = 0, size = stepsData.size(); i < size; i++) {
+                TestCaseStepDataEntity caseStepData = stepsData.get(i);
+                String paramType = caseStepData.getParam_type();
+
+                switch (paramType){
+                    case "header":
+                        headers.add(caseStepData);
+                        break;
+                    case "form":
+                        bodys.add(caseStepData);
+                        returnMap.put("bodytype", "form");
+                        break;
+                    case "json":
+                        returnMap.put("jsonstr", caseStepData.getRequest_value());
+                        returnMap.put("bodytype", "json");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            returnMap.put("headers", headers);
+            returnMap.put("form", bodys);
+        }
+
+        log.info("getCaseStepDataByRelationId:" + FastJsonUtil.parseToJSON(returnMap));
+
+        return returnMap;
     }
 
 }
